@@ -1,0 +1,34 @@
+/* src/components/components.css */
+
+/* Navbar container */
+.navbar {
+  background-color: #2563EB; /* Tailwind bg-blue-600 */
+  color: #FFFFFF;            /* Tailwind text-white */
+  padding: 1rem;             /* Tailwind p-4 */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Links wrapper in Navbar */
+.navbar-links {
+  display: flex;
+  gap: 1rem;                 /* Tailwind space-x-4 */
+}
+
+/* Logout button styling */
+.logout-button {
+  background: none;
+  border: none;
+  color: inherit;
+  text-decoration: underline; /* Tailwind underline */
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
+/* Optionally, add hover effects */
+.navbar-links a:hover,
+.logout-button:hover {
+  opacity: 0.8;
+}

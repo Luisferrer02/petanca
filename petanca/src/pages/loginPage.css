@@ -1,0 +1,66 @@
+/* src/pages/loginPage.css */
+
+/* Centra vertical y horizontalmente */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #F3F4F6;
+}
+
+/* Formulario */
+.login-form {
+  background-color: #FFFFFF;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 20rem; /* aproximadamente 320px */
+}
+
+/* Título del formulario */
+.form-title {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Mensaje de error */
+.error-message {
+  color: #DC2626; /* rojo */
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+/* Grupo de campo */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+/* Inputs */
+.form-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  color: #374151;
+}
+
+/* Botón de envío */
+.submit-button {
+  width: 100%;
+  padding: 0.5rem;
+  background-color: #2563EB; /* azul */
+  color: #FFFFFF;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.submit-button:hover {
+  opacity: 0.9;
+}

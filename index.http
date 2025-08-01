@@ -1,0 +1,37 @@
+### Auth: login
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "portals1234"
+}
+
+###
+
+@token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODI3NGU4Nzc3OTcwZmNjMGFmMTZkZiIsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3NTM3MDAyMDYsImV4cCI6MTc1Mzc4NjYwNn0.MqtX009EOFcwgcnoNrTCdKx0qOX3LTNDk1QFPcFraEU
+
+###
+
+POST http://localhost:4000/api/notify/688275a566fbf536f513fe3e
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+###
+
+### 2. CREAR UN EQUIPO (usa {{token}})
+POST http://localhost:4000/api/teams
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Equipo REST",
+  "players": ["Jugador1","Jugador2","Jugador3"],
+  "contact": { "email": "rest@example.com" }
+}
+
+###
+
+### 3. LISTAR EQUIPOS (usa {{token}})
+GET http://localhost:4000/api/teams
+Authorization: Bearer {{token}}

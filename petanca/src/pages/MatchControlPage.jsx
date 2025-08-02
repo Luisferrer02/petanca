@@ -11,7 +11,7 @@ export default function MatchControlPage({ token }) {
 
   useEffect(() => {
     loadMatches();
-  }, []);
+  }, [loadMatches]);
 
   async function loadMatches() {
     try {

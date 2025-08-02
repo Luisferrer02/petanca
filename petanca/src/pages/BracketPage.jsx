@@ -8,7 +8,7 @@ export default function BracketPage({ token }) {
 
   useEffect(() => {
     loadMatches();
-  }, []);
+  }, [loadMatches]);
 
   async function loadMatches() {
     try {

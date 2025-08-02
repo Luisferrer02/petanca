@@ -6,93 +6,112 @@ import Navbar from '../components/Navbar';
 export default function BracketPage({ token }) {
   const [matches, setMatches] = useState([]);
 
-  useEffect(() => { loadMatches(); }, []);
+  useEffect(() => {
+    loadMatches();
+  }, []);
 
   async function loadMatches() {
     try {
       const data = await get('/matches', token);
       setMatches(Array.isArray(data) ? data : data.matches || []);
-    } catch {
+    } catch (err) {
+      console.error('Error cargando bracket:', err);
       setMatches([]);
     }
   }
 
   async function handleGenerate() {
-    if (!window.confirm('¿Regenerar bracket?')) return;
+    if (!window.confirm('¿Regenerar bracket? Se perderán los actuales.')) return;
     await post('/matches/generate', {}, token);
     loadMatches();
   }
 
-  // Agrupar por ronda
+  // Agrupar partidos por ronda
   const grouped = matches.reduce((acc, m) => {
-    (acc[m.round] = acc[m.round] || []).push(m);
+    acc[m.round] = acc[m.round] || [];
+    acc[m.round].push(m);
     return acc;
   }, {});
-  const rounds = Object.keys(grouped)
-    .map(Number)
-    .sort((a, b) => a - b);
+  const rounds = Object.keys(grouped).map(Number).sort((a, b) => a - b);
 
-  if (!rounds.length) {
+  if (rounds.length === 0) {
     return (
       <>
         <Navbar onLogout={() => window.location.reload()} />
         <div style={{ padding: 16, fontFamily: 'monospace' }}>
           <button onClick={handleGenerate}>Generar Bracket</button>
-          <pre>Aún no hay bracket.</pre>
+          <pre>
+{`----------------------------------------
+|   Aún no hay bracket. Click arriba   |
+|  para generarlo y verlo aquí.        |
+----------------------------------------`}
+          </pre>
         </div>
       </>
     );
   }
 
-  // Construir secciones según # de partidos
-  const sections = [];
-  rounds.forEach(r => {
-    const ms = (grouped[r] || []).sort((a, b) => a.sequence - b.sequence);
-    const cnt = ms.length;
+  const maxRound = Math.max(...rounds);
+  const semisRound = maxRound - 1;
 
-    if (cnt === 16) {
-      sections.push({ label: 'Dieciseisavos', matches: ms });
-    } else if (cnt === 8) {
-      sections.push({ label: 'Octavos', matches: ms });
-    } else if (cnt === 4) {
-      sections.push({ label: 'Cuartos', matches: ms });
-    } else if (cnt === 3) {
-      // Semifinal + Tercer Puesto
-      sections.push({ label: 'Semifinal', matches: ms.slice(0, 2) });
-      sections.push({ label: 'Tercer Puesto', matches: ms.slice(2) });
-    } else if (cnt === 2) {
-      sections.push({ label: 'Final', matches: ms });
+  // Etiquetas dinámicas
+  function roundLabel(r) {
+    if (r === 0) return 'Prevía';
+    const dist = maxRound - r;
+    switch (dist) {
+      case 0: return 'Final';
+      case 1: return 'Semifinal';
+      case 2: return 'Cuartos';
+      case 3: return 'Octavos';
+      case 4: return 'Dieciseisavos';
+      default: return `Ronda ${r}`;
+    }
+  }
+
+  // Construir secciones en orden, incluyendo Tercer Puesto
+  const sections = [];
+
+  // Prevía (ronda 0)
+  if (grouped[0]) {
+    sections.push({
+      label: roundLabel(0),
+      matches: grouped[0].sort((a, b) => a.sequence - b.sequence)
+    });
+  }
+
+  rounds.forEach(r => {
+    if (r === 0) return;
+    const roundMatches = grouped[r].sort((a, b) => a.sequence - b.sequence);
+
+    if (r === semisRound) {
+      // Semifinales
+      const semis = roundMatches.slice(0, 2);
+      sections.push({ label: roundLabel(r), matches: semis });
+
+      // Tercer puesto 
+      const third = roundMatches.slice(2);
+      if (third.length) {
+        sections.push({ label: 'Tercer Puesto', matches: third });
+      }
+    } else if (r === maxRound) {
+      // Final
+      sections.push({ label: roundLabel(r), matches: roundMatches });
     } else {
-      sections.push({ label: `Ronda ${r}`, matches: ms });
+      // Rondas intermedias (Cuartos, Octavos…)
+      sections.push({ label: roundLabel(r), matches: roundMatches });
     }
   });
 
-  // Mostrar nombre o placeholder
+  // Mostrar nombre de equipo o placeholder con etiqueta correcta
   const dispName = (m, side, isThird) => {
-    // Si el equipo ya está asignado, mostrarlo
     const team = side === 'A' ? m.teamA : m.teamB;
-    if (team?.name) return team.name;
+    if (team && team.name) return team.name;
 
-    // Si es partido de 3er puesto, placeholder
-    if (isThird) {
-      const parent = side === 'A' ? m.parentMatchA : m.parentMatchB;
-      return `Perdedor Semifinal.${parent?.sequence ?? (side === 'A' ? 1 : 2)}`;
-    }
-
-    // Placeholder ganador normal
     const parent = side === 'A' ? m.parentMatchA : m.parentMatchB;
-    if (parent?.sequence != null) {
-      // Determinar etiqueta de ronda del padre
-      const pcnt = (grouped[parent.round] || []).length;
-      let pname;
-      switch (pcnt) {
-        case 16: pname = 'Dieciseisavos'; break;
-        case 8:  pname = 'Octavos'; break;
-        case 4:  pname = 'Cuartos'; break;
-        case 2:  pname = 'Semifinal'; break;
-        default: pname = `Ronda ${parent.round}`;
-      }
-      return `Ganador ${pname}.${parent.sequence}`;
+    if (parent) {
+      const who = isThird ? 'Perdedor' : 'Ganador';
+      // Aquí usamos roundLabel(parent.round), que para parent.round= semisRound devolverá "Semifinal"
+      return `${who} ${roundLabel(parent.round)}.${parent.sequence}`;
     }
     return 'N/A';
   };
@@ -115,6 +134,7 @@ export default function BracketPage({ token }) {
         >
           Generar Bracket
         </button>
+
         <pre>
 {sections.map(sec => {
   const isThird = sec.label === 'Tercer Puesto';
